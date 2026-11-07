@@ -93,6 +93,7 @@ button{font:inherit;color:inherit}
 @keyframes zzA{0%{transform:translate(0,0);opacity:0}20%{opacity:1}100%{transform:translate(40px,-90px);opacity:0}}
 .morning{position:absolute;inset:0;background:#fff6d6;opacity:0;transition:opacity .5s;display:flex;align-items:center;justify-content:center;font-family:var(--hud);font-size:30px;color:var(--ink)}
 .morning.on{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
 .stars{font-family:var(--hud);font-size:34px;color:#ffc61a;-webkit-text-stroke:2px var(--ink);letter-spacing:4px}
 .reward{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:4px 14px;font-family:var(--hud);font-size:20px;z-index:6}
 .reward img{width:28px}
@@ -540,7 +541,7 @@ function popOut(k,atWeed){const H=$('#home'),C=$('#hCrop'),hr=H.getBoundingClien
   const im=document.createElement('img');im.src=IMG[k];im.className='popw';H.appendChild(im);
   im.animate([{left:x+'%',top:y+'%',transform:'translate(-50%,-50%) scale(.6) rotate(0)'},{left:(x+8)+'%',top:(y-14)+'%',transform:'translate(-50%,-50%) scale(1) rotate(25deg)',offset:.45},{left:(x+16)+'%',top:(y-4)+'%',transform:'translate(-50%,-50%) scale(.9) rotate(60deg)',opacity:0}],{duration:800,easing:'ease-out',fill:'forwards'}).onfinish=()=>im.remove()}
 function drops(){for(let i=0;i<6;i++){const d=document.createElement('div');d.className='drop';d.style.left=(30+Math.random()*18)+'%';d.style.top=(50+Math.random()*6)+'%';d.style.animationDelay=i*80+'ms';$('#home').appendChild(d);setTimeout(()=>d.remove(),1200)}}
-function care(k){
+function care(k){if(walking||window.SLEEPING)return;
   if(S.stage<0||S.stage>=6){toast(S.stage<0?'먼저 씨앗을 심어요':'수확할 때예요');return}
   if(k!=='weed'&&S.cared[k]){toast('오늘은 이미 했어요');return}
   if(k==='weed'&&!S.weeds){toast('잡초가 없어요');return}
@@ -641,7 +642,7 @@ function sleep(){tutDone(3);if(window.SLEEPING)return;window.SLEEPING=1;
   setTimeout(()=>{
     S.day++;S.cared={};S.energy=100;const rained=Math.random()*100<S.rain;S.rain=[10,20,30,60,80][Math.floor(Math.random()*5)];
     if(S.stage>=0&&S.stage<6){if(grow)S.stage++;S.water=Math.max(0,S.water-35);S.fert=Math.max(0,S.fert-25);if(rained)S.water=Math.min(100,S.water+40);if(S.inv.sprinkler)S.water=Math.min(100,S.water+40);if(S.stage>=1&&S.stage<6&&Math.random()<.5)S.weeds=Math.min(3,S.weeds+1)}
-    save();const m=$('#morning');m.textContent=S.day+'일차 아침';m.classList.add('on');sfx('ok');
+    save();const m=$('#morning');m.innerHTML='<div style="text-align:center"><img src="'+IMG.i_sun+'" style="width:90px;display:block;margin:0 auto 10px;animation:spin 6s linear infinite" alt="">'+S.day+'일차 아침</div>';m.classList.add('on');sfx('ok');
     setTimeout(()=>{show('home');$('#night').classList.remove('on');setTimeout(()=>{m.classList.remove('on');window.SLEEPING=0},600);
       if(grow){sfx('grow');anim($('#hCrop'),'pop');toast(S.stage>=6?'다 자랐어요!':'쑥쑥 자랐어요')}else if(S.stage>=0&&S.stage<6)toast('물·거름이 부족해서 못 자랐어요');
       if(rained)setTimeout(()=>toast('밤새 비가 왔어요'),1500)},1100);
