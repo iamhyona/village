@@ -66,7 +66,7 @@ button{font:inherit;color:inherit}
 .letter p{position:absolute;left:12%;right:12%;top:20%;margin:0;font-size:18px;line-height:2.02;color:#3a2e22}
 .dim{position:absolute;inset:0;background:rgba(27,27,27,.35);z-index:5}
 /* modal sheet */
-.modal{position:absolute;inset:0;background:rgba(27,27,27,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.modal{position:absolute;inset:0;top:0;left:0;width:100%;height:100%;background:rgba(27,27,27,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .modal.on{display:flex}
 .sheet{width:92%;margin-bottom:4%;background:var(--cream);border:3px solid var(--ink);border-radius:22px;padding:14px;box-sizing:border-box}
 .sheet h3{margin:0 0 10px;font-family:var(--hud);font-weight:400;font-size:19px;text-align:center}
@@ -116,7 +116,8 @@ button{font:inherit;color:inherit}
 .rlTap{position:absolute;right:5%;bottom:3.5%;font-family:var(--hud);font-size:15px;background:var(--cream);border:2.5px solid var(--ink);border-radius:999px;padding:3px 12px;z-index:5;animation:bob 1s infinite;pointer-events:none}
 /* map pins */
 .pin{position:absolute;transform:translate(-50%,-100%);animation:pinb 1.6s ease-in-out infinite!important;width:15%;aspect-ratio:1;background:var(--cream);border:3px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:4;cursor:pointer;padding:0;animation:float 2.2s ease-in-out infinite}
-.pin img{width:66%;height:66%;object-fit:contain}
+.pin img{width:66%;height:66%;object-fit:contain;pointer-events:none}
+.pin::before{content:"";position:absolute;inset:-12px;border-radius:50%}
 .pin::after{content:"";position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top:9px solid var(--ink)}
 .pin.lock{background:#e6e0d2}.pin.lock img{opacity:.4}
 .pin.here{background:var(--yel)}
@@ -125,7 +126,7 @@ button{font:inherit;color:inherit}
 .mgHint{margin:4px 0 0;font-size:16px;line-height:1.4}
 #run canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .rhud{position:absolute;left:3%;right:3%;top:2.6%;display:flex;gap:2%;z-index:5;pointer-events:none}
-.over{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,27,27,.45);z-index:8}
+.over{position:absolute;inset:0;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(27,27,27,.45);z-index:8}
 .over.on{display:flex}
 /* title */
 #title .logo{position:absolute;left:0;right:0;top:7%;text-align:center;z-index:3;pointer-events:none}
@@ -845,7 +846,7 @@ const TUT=[
  {scr:'room',when:()=>true,el:'#rBed',tx:'침대를 누르면 하루가 지나고<br>작물이 한 단계 자라요'},
  {scr:'room',when:()=>true,el:'#rHook',tx:'놀이 도구를 누르면<br>바로 놀러 갈 수 있어요'},
  {scr:'home',when:()=>S.day>=2,el:'#hKick',tx:'킥보드를 누르면 지도가 열려요<br>낚시·다이빙 같은 놀이를 해 봐요'},
- {scr:'map',when:()=>true,el:'#pins',tx:'가고 싶은 곳을 눌러요<br>놀이를 하면 코인을 모을 수 있어요'}];
+ {scr:'map',when:()=>true,el:'#pins .pin[data-d=fish]',tx:'가고 싶은 곳을 눌러요<br>놀이를 하면 코인을 모을 수 있어요'}];
 function coach(){const c=$('#coach');const cur=($$('.scr').find(x=>x.classList.contains('on'))||{}).id;S.td=S.td||{};
   let i=TUT.findIndex((t,k)=>!S.td[k]&&t.scr===cur&&t.when());const t=TUT[i];if(!OPT.tut||!S.intro||!t||$('.modal.on')||walking){c.classList.remove('on');return}
   const el=$(t.el);if(!el||el.style.display==='none'){c.classList.remove('on');return}
