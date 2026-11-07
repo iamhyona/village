@@ -256,7 +256,7 @@ button:focus-visible{outline:3px dashed #3d86e0;outline-offset:2px}
     <img class="s" data-img="p_basket" style="width:30%;left:66%;bottom:12%;z-index:6" alt="팡팡이">
     <div class="stars" id="hvStars" style="position:absolute;top:13%;width:100%;text-align:center;z-index:6"></div>
     <div class="reward" style="top:21%"><img data-img="i_coin" alt=""><span id="hvCoin">+0</span></div>
-    <div class="bar"><button id="hvGo" class="need" aria-label="수확제로"><img data-img="i_heart" alt=""></button></div>
+    <div class="bar"><button id="hvGo" class="need lbl" aria-label="수확제로"><img data-img="i_heart" alt=""><b>수확제로</b></button></div>
   </section>
 
   <!-- FESTIVAL -->
@@ -266,7 +266,7 @@ button:focus-visible{outline:3px dashed #3d86e0;outline-offset:2px}
     <div class="stars" id="fsStars" style="position:absolute;top:21%;width:100%;text-align:center;z-index:6"></div>
     <div class="reward" style="top:28%"><img data-img="i_coin" alt=""><span id="fsCoin">+0</span></div>
     <canvas id="confetti" width="390" height="693" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5"></canvas>
-    <div class="bar"><button id="fsGo" class="need" aria-label="텃밭으로"><img data-img="i_sprout" alt=""></button></div>
+    <div class="bar"><button id="fsGo" class="need lbl" aria-label="새 씨앗 심으러 가기"><img data-img="i_sprout" alt=""><b>새 씨앗 심으러 가기</b></button></div>
   </section>
 
   <!-- RUNNER -->
@@ -761,9 +761,9 @@ MG.barn={name:'창고 정리',bg:'bg_barn',icon:'it_crate',i1:'i_heart',i3:'i_ca
 /* ---- 줄넘기 ---- */
 MG.rope={name:'운동장 줄넘기',bg:'bg_rope',icon:'it_rope',i1:'i_heart',i3:'it_rope',hint:'줄이 발밑으로 올 때<br>화면을 눌러 폴짝 뛰어요!',
  reset(){G={on:false,fx:[],hp:3,coin:0,n:0,best:0,th:0,sp:.042,jy:0,jt:0,t:0,hit:0}},
- down(){if(G.jt<=0){G.jt=34;sfx('jump')}},
- step(){G.t++;const prev=G.th;G.th+=G.sp;if(G.hit>0)G.hit--;
-  if(G.jt>0){G.jt--;const k=1-G.jt/34;G.jy=Math.sin(k*Math.PI)*62}else G.jy=0;
+ down(){if(G.jt<=0&&!(G.cd>0)){G.jt=34;sfx('jump')}},
+ step(){G.t++;const prev=G.th;G.th+=G.sp;if(G.hit>0)G.hit--;if(G.cd>0)G.cd--;
+  if(G.jt>0){G.jt--;const k=1-G.jt/34;G.jy=Math.sin(k*Math.PI)*62;if(G.jt===0)G.cd=12}else G.jy=0;
   const a=prev%(Math.PI*2),b=G.th%(Math.PI*2);
   if(a<Math.PI&&b>=Math.PI){if(G.jy>16){G.n++;const v=gain(2+Math.floor(G.n/10));G.coin+=v;combo();lvCheck(1+Math.floor(G.n/10));sfx('coin');if(G.n%5===0)popTxt(G.n+'번!',195,200,'#ffd84a');G.sp=Math.min(.13,G.sp+.0018)}
    else{miss();G.hp--;G.hit=40;sfx('bad');buzz(100);popTxt('걸렸어요!',195,240);G.sp=Math.max(.05,G.sp-.015);if(G.hp<=0)setTimeout(()=>G&&G.on&&mgEnd(G.coin,'줄넘기 '+G.n+'번'),200)}}},
