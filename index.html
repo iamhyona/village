@@ -623,26 +623,28 @@ function rReset(){R={t:0,speed:5,dist:0,coin:0,hp:3,inv:0,y:0,vy:0,jumps:0,obs:[
 function jump(){if(!R||R.over)return;if(R.jumps<2){R.vy=R.jumps?-11:-14;R.jumps++;sfx('jump')}}
 function slide(){}
 function drawI(k,x,y,w,ax=.5,ay=1){const im=sp(k);if(!im||!im.complete||!im.width)return;const h=w*im.height/im.width;cx.drawImage(im,x-w*ax,y-h*ay,w,h)}
-function rDraw(){cx.save();if(R.shake>0){cx.translate((Math.random()-.5)*R.shake,0);R.shake*=.85}
+const RX=96,RZ=1.3;
+function rDraw(){cx.save();if(R.shake>0){cx.translate((Math.random()-.5)*R.shake,0);R.shake*=.85}cx.translate(0,GY+20);cx.scale(RZ,RZ);cx.translate(0,-GY-20);
   cx.fillStyle='#93d353';cx.fillRect(0,0,CW,CH);cx.fillStyle='#5ac4fb';cx.fillRect(0,0,CW,BGOFF+4);const bg=sp('bg_run');if(bg&&bg.complete&&bg.width){const h=CH,w=bg.width*h/bg.height;let x=-(R.bgx%(w*2));for(let i=0;i<4;i++){const xx=x+i*w;cx.save();if(i%2){cx.translate(xx+w,BGOFF);cx.scale(-1,1);cx.drawImage(bg,0,0,w,h)}else cx.drawImage(bg,xx,BGOFF,w,h);cx.restore()}}
   else{cx.fillStyle='#8fd4fb';cx.fillRect(0,0,CW,CH)}
   R.cs.forEach(c=>drawI('i_coin',c.x,c.y,26,.5,.5));
   R.obs.forEach(o=>drawI(o.k,o.x+o.w/2,GY+6,o.w));
   const air=R.y<0;const pk=air?'rn_jump':(Math.floor(R.t/6)%2?'rn_1':'rn_2');
   const fy=(R.hist[R.hist.length-14]||0);const fk='cr_'+R.fr+'6';
-  cx.save();cx.translate(0,Math.abs(Math.sin(R.t/5))*-6);drawI('rf_'+R.fr,44,GY+4+fy,66);cx.restore();
-  cx.save();if(R.inv>0&&Math.floor(R.t/4)%2)cx.globalAlpha=.4;drawI(pk,112,GY+4+R.y,92);cx.restore();cx.restore()}
-function rStep(){R.t++;R.speed=Math.min(11,5+R.dist/800);R.dist+=R.speed/6;R.bgx+=R.speed*.6;
+  cx.save();cx.translate(0,Math.abs(Math.sin(R.t/5))*-6);drawI('rf_'+R.fr,36,GY+4+fy,66);cx.restore();
+  cx.save();if(R.inv>0&&Math.floor(R.t/4)%2)cx.globalAlpha=.4;drawI(pk,RX,GY+4+R.y,92);cx.restore();cx.restore()}
+function rStep(){R.t++;R.speed=Math.min(9.5,4.6+R.dist/900);R.dist+=R.speed/6;R.bgx+=R.speed*.6;
   R.vy+=.65;R.y+=R.vy;if(R.y>=0){R.y=0;R.vy=0;R.jumps=0}if(R.inv>0)R.inv--;R.hist.push(R.y);if(R.hist.length>30)R.hist.shift();
   if(--R.next<=0){const k=['ob_rock','ob_stump','ob_bale','ob_fence'][Math.random()*4|0];const w={ob_rock:58,ob_stump:62,ob_bale:70,ob_fence:64}[k];R.obs.push({k,x:CW+20,w,h:w*.7});R.next=Math.max(48,100-Math.min(1,R.dist/2500)*45)+Math.random()*60}
   if(--R.cn<=0){const air=Math.random()<.45;for(let i=0;i<5;i++)R.cs.push({x:CW+20+i*34,y:air?GY-140-Math.sin(i/4*Math.PI)*40:GY-30});R.cn=70+Math.random()*80}
-  const hb={x:92,y:GY+R.y-90,w:40,h:86};
+  const hb={x:RX-20,y:GY+R.y-90,w:40,h:86};
   R.obs.forEach(o=>{o.x-=R.speed;const ob={x:o.x+8,y:GY-o.h+8,w:o.w-16,h:o.h-8};
     if(!o.hit&&R.inv<=0&&hb.x<ob.x+ob.w&&hb.x+hb.w>ob.x&&hb.y<ob.y+ob.h&&hb.y+hb.h>ob.y){o.hit=1;R.hp--;R.inv=70;R.shake=12;sfx('bad');buzz(80);if(R.hp<=0)rEnd()}});
   R.obs=R.obs.filter(o=>o.x>-140);
-  R.cs.forEach(c=>{c.x-=R.speed;if(!c.got&&Math.abs(c.x-112)<28&&c.y>hb.y-12&&c.y<hb.y+hb.h+12){c.got=1;R.coin++;sfx('coin')}});R.cs=R.cs.filter(c=>!c.got&&c.x>-30);
+  R.cs.forEach(c=>{c.x-=R.speed;if(!c.got&&Math.abs(c.x-RX)<28&&c.y>hb.y-12&&c.y<hb.y+hb.h+12){c.got=1;R.coin++;sfx('coin')}});R.cs=R.cs.filter(c=>!c.got&&c.x>-30);
   $('#rHpT').textContent=Math.max(0,R.hp);$('#rCoinT').textContent=R.coin*5;$('#rDistT').textContent=Math.floor(R.dist)+'m'}
-function rLoop(){if(!R||R.over)return;rStep();rDraw();raf=requestAnimationFrame(rLoop)}
+const STEP=1000/60;let rLast=0,rAcc=0;
+function rLoop(){if(!R||R.over)return;const now=performance.now();if(!rLast||now-rLast>250){rLast=now-STEP;rAcc=0}rAcc+=now-rLast;rLast=now;let n=0;while(rAcc>=STEP&&n<4){rAcc-=STEP;n++;rStep();if(!R||R.over)break}if(n&&R)rDraw();if(R&&!R.over)raf=requestAnimationFrame(rLoop)}
 function rCardStart(){const fr=R.fr;$('#rCard').innerHTML=`<div style="display:flex;justify-content:center;align-items:flex-end;gap:6px"><img src="${IMG['cr_'+fr+'6']}" style="width:24%" alt=""><img src="${IMG.rn_1}" style="width:30%" alt=""></div><div style="font-family:var(--hud);font-size:22px;margin-top:4px">둘레길 달리기</div><p class="mgHint">${CROPS[fr].name} 친구와 함께 달려요!<br>화면을 누르면 점프, 두 번 누르면 높이 점프</p><button class="big" id="rGo">출발</button><button class="close" id="rBack">✕</button>`;$('#rOver').classList.add('on');
   $('#rGo').onclick=()=>{sfx('ok');$('#rOver').classList.remove('on');rReset();rLoop()};$('#rBack').onclick=()=>{R=null;show('map')}}
 function rEnd(){R.over=true;cancelAnimationFrame(raf);const c=R.coin*5+Math.floor(R.dist/20);S.coin+=c;S.best=Math.max(S.best,Math.floor(R.dist));save();sfx('win');
@@ -675,7 +677,9 @@ function juiceDraw(){juice();
   if(G.ban){const f=G.ban.f,k=f<10?f/10:f>55?(70-f)/15:1;const sc=f<10?.6+.4*(f/10)+.15*Math.sin(f/10*Math.PI):1;mx.save();mx.globalAlpha=Math.max(0,k);mx.translate(MW/2,250);mx.scale(sc,sc);mx.font='38px Hud, sans-serif';mx.textAlign='center';mx.lineWidth=9;mx.lineJoin='round';mx.strokeStyle='#1b1b1b';mx.strokeText(G.ban.t,0,0);mx.fillStyle=G.ban.c;mx.fillText(G.ban.t,0,0);mx.restore()}}
 function countdown(cb){let n=3;const m=MG[mgId];const tick=()=>{mx.clearRect(0,0,MW,MH);m.draw();mx.fillStyle='rgba(27,27,27,.25)';mx.fillRect(0,0,MW,MH);mx.save();mx.translate(MW/2,MH/2-40);mx.font='96px Hud, sans-serif';mx.textAlign='center';mx.lineWidth=12;mx.lineJoin='round';mx.strokeStyle='#1b1b1b';const t=n>0?n:'시작!';mx.strokeText(t,0,0);mx.fillStyle=n>0?'#fff':'#ffd84a';mx.fillText(t,0,0);mx.restore();sfx(n>0?'tap':'ok');if(n-->0)setTimeout(tick,560);else setTimeout(cb,420)};tick()}
 function mgExit(){cancelAnimationFrame(mraf);G=null;show('map')}
-function mLoop(){if(!G||!G.on)return;const m=MG[mgId];m.step();if(!G||!G.on)return;juiceStep();mx.clearRect(0,0,MW,MH);mx.save();if(G.shk>.5)mx.translate((Math.random()-.5)*G.shk,(Math.random()-.5)*G.shk);m.draw();mx.restore();juiceDraw();m.hud();mraf=requestAnimationFrame(mLoop)}
+let mLast=0,mAcc=0;
+function mLoop(){if(!G||!G.on)return;const m=MG[mgId];const now=performance.now();if(!mLast||now-mLast>250){mLast=now-STEP;mAcc=0}mAcc+=now-mLast;mLast=now;let n=0;while(mAcc>=STEP&&n<4){mAcc-=STEP;n++;m.step();if(!G||!G.on)return;juiceStep()}
+  if(n){mx.clearRect(0,0,MW,MH);mx.save();if(G.shk>.5)mx.translate((Math.random()-.5)*G.shk,(Math.random()-.5)*G.shk);m.draw();mx.restore();juiceDraw();m.hud()}mraf=requestAnimationFrame(mLoop)}
 function mgEnd(coin,line){G.on=false;cancelAnimationFrame(mraf);G.fx=[];G.pt=[];setTimeout(()=>{mx.clearRect(0,0,MW,MH);try{MG[mgId].draw()}catch(e){}},0);S.coin+=coin;S.best_=S.best_||{};const prevBest=S.best_[mgId]||0;const isNew=coin>prevBest&&coin>0;S.best_[mgId]=Math.max(prevBest,coin);save();syncHud();sfx(coin>0?'win':'bad');
   $('#mgCard').innerHTML=`<div class="stars">${'★'.repeat(coin>=150?3:coin>=60?2:coin>0?1:0)}${'☆'.repeat(3-(coin>=150?3:coin>=60?2:coin>0?1:0))}</div><div class="reward" style="position:static;transform:none;margin:8px auto 0;width:max-content"><img src="${IMG.i_coin}" alt="">+${coin}</div><p class="mgHint">${line}</p><p class="mgHint" style="margin-top:2px">${isNew?'<b style="color:#f0564a">최고 기록!</b>':'최고 '+S.best_[mgId]}</p><button class="big" id="mgGo">다시</button><button class="close" id="mgBack">✕</button>`;
   $('#mgOver').classList.add('on');$('#mgGo').onclick=()=>{sfx('ok');$('#mgOver').classList.remove('on');MG[mgId].reset();countdown(()=>{G.on=true;mLoop()})};$('#mgBack').onclick=mgExit}
@@ -744,6 +748,7 @@ MG.fish={name:'강가 낚시',bg:'bg_fish',icon:'it_rod',i1:'i_calendar',i3:'fs_
   drawFx()},
  hud(){$('#mgT1').textContent=timerTxt();$('#mgT2').textContent=G.coin;$('#mgT3').textContent=G.got}};
 
+const TRE=[{k:'sv_shell',v:5,w:40,p:45},{k:'sv_star',v:10,w:42,p:30},{k:'sv_pearl',v:30,w:44,p:17},{k:'sv_chest',v:80,w:54,p:8}];
 MG.sea={name:'바닷속 다이빙',bg:'bg_sea',icon:'it_goggle',i1:'sv_bubble',i3:'sv_pearl',hint:'화면을 꾹 누른 채로 움직이면<br>팡팡이가 따라 헤엄쳐요. 해파리 조심!',
  reset(){G={on:false,fx:[],x:195,y:300,tx:195,ty:300,air:100,coin:0,got:0,it:[],jf:[],bb:[],t:0,hurt:0,face:1}},
  down(x,y){G.tx=x;G.ty=y},move(x,y){G.tx=x;G.ty=y},
